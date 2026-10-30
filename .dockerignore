@@ -1,0 +1,9 @@
+.env
+.git
+.github
+evidencia
+entrega
+**/__pycache__
+**/*.pyc
+**/.venv
+**/node_modules

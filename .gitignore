@@ -1,0 +1,5 @@
+.env
+evidencia/
+entrega/
+__pycache__/
+*.pyc

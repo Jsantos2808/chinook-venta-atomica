@@ -1,0 +1,35 @@
+# Copia local dedicada de Chinook. No apunta a ninguna base que ya exista en el equipo.
+# La imagen queda fijada en PostgreSQL 18.6 (misma compilación que la etiqueta mayor 18).
+name: chinook-transacciones
+
+services:
+  db:
+    image: postgres:18.6@sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      LANG: C.UTF-8
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      # PostgreSQL 18 publica los datos en /var/lib/postgresql, no en .../data.
+      - pgdata:/var/lib/postgresql
+      - ./datos:/datos:ro
+      - ./01_venta_exitosa.sql:/sql/01_venta_exitosa.sql:ro
+      - ./02_rollback_total.sql:/sql/02_rollback_total.sql:ro
+      - ./03_savepoint.sql:/sql/03_savepoint.sql:ro
+      - ./04_validaciones.sql:/sql/04_validaciones.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  pgdata:
